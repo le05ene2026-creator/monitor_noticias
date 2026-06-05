@@ -28,12 +28,3 @@ jobs:
           EMAIL_PASS: ${{ secrets.EMAIL_PASS }}
           EMAIL_TO: ${{ secrets.EMAIL_TO }}
         run: python main.py
-
-      - name: Guardar noticias enviadas
-        run: |
-          git pull --rebase
-          git config user.name "github-actions"
-          git config user.email "github-actions@github.com"
-          git add noticias_enviadas.json
-          git commit -m "Actualizar noticias enviadas" || echo "Sin cambios"
-          git push || echo "No se pudo hacer push, continuar"
