@@ -3,6 +3,8 @@ import json
 import os
 import smtplib
 from email.mime.text import MIMEText
+from datetime import datetime, timedelta, timezone
+from email.utils import parsedate_to_datetime
 
 KEYWORDS = [
     "mundial",
@@ -32,38 +34,61 @@ def cargar_enviadas():
         return []
 
 
-def guardar_enviadas(datos):
-    with open(ARCHIVO_ENVIADAS, "w", encoding="utf-8") as f:
-        json.dump(datos, f, indent=2, ensure_ascii=False)
-
-
 def contiene_keyword(texto):
     texto = texto.lower()
     return any(k in texto for k in KEYWORDS)
+
+
+def fecha_entry(entry):
+    fecha = entry.get("published", "") or entry.get("updated", "")
+    if not fecha:
+        return None
+
+    try:
+        dt = parsedate_to_datetime(fecha)
+        if dt.tzinfo is None:
+            dt = dt.replace(tzinfo=timezone.utc)
+        return dt
+    except:
+        return None
+
+
+def es_ultimas_24_horas(entry):
+    dt = fecha_entry(entry)
+    if dt is None:
+        return False
+
+    ahora = datetime.now(timezone.utc)
+    limite = ahora - timedelta(hours=24)
+
+    return dt >= limite
 
 
 def obtener_noticias():
     resultados = []
 
     for feed_url in RSS_FEEDS:
-        try:
-            feed = feedparser.parse(feed_url)
+        print(f"Revisando RSS: {feed_url}")
 
-            for entry in feed.entries:
-                titulo = entry.get("title", "")
-                resumen = entry.get("summary", "")
-                enlace = entry.get("link", "")
+        feed = feedparser.parse(feed_url)
+        print(f"Noticias recibidas: {len(feed.entries)}")
 
-                texto = f"{titulo} {resumen}"
+        for entry in feed.entries:
+            titulo = entry.get("title", "")
+            resumen = entry.get("summary", "")
+            enlace = entry.get("link", "")
+            fecha = entry.get("published", "") or entry.get("updated", "")
 
-                if contiene_keyword(texto):
-                    resultados.append({
-                        "titulo": titulo,
-                        "link": enlace
-                    })
+            texto = f"{titulo} {resumen}"
 
-        except Exception as e:
-            print(e)
+            if es_ultimas_24_horas(entry) and contiene_keyword(texto):
+                resultados.append({
+                    "titulo": titulo,
+                    "link": enlace,
+                    "fecha": fecha
+                })
+
+    print(f"Noticias encontradas en últimas 24 horas: {len(resultados)}")
 
     return resultados
 
@@ -73,10 +98,11 @@ def enviar_correo(noticias):
     email_pass = os.environ["EMAIL_PASS"]
     email_to = os.environ["EMAIL_TO"]
 
-    cuerpo = "Noticias encontradas:\n\n"
+    cuerpo = "Noticias encontradas en las últimas 24 horas:\n\n"
 
     for n in noticias:
         cuerpo += f"Título: {n['titulo']}\n"
+        cuerpo += f"Fecha: {n['fecha']}\n"
         cuerpo += f"Enlace: {n['link']}\n\n"
 
     mensaje = MIMEText(cuerpo, "plain", "utf-8")
@@ -92,9 +118,7 @@ def enviar_correo(noticias):
 
 
 def main():
-
     enviadas = cargar_enviadas()
-
     urls_enviadas = {n["link"] for n in enviadas}
 
     noticias = obtener_noticias()
@@ -106,14 +130,9 @@ def main():
 
     if nuevas:
         enviar_correo(nuevas)
-
-        enviadas.extend(nuevas)
-
-        guardar_enviadas(enviadas)
-
         print(f"Enviadas {len(nuevas)} noticias.")
     else:
-        print("Sin noticias nuevas.")
+        print("Sin noticias nuevas en las últimas 24 horas.")
 
 
 if __name__ == "__main__":
