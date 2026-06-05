@@ -17,6 +17,7 @@ KEYWORDS = [
     "mundial 2026",
     "fútbol",
     "futbol"
+    "Japón"
 ]
 
 RSS_FEEDS = [
