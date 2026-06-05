@@ -5,16 +5,7 @@ import smtplib
 from email.mime.text import MIMEText
 
 KEYWORDS = [
-    "mundial",
-    "copa del mundo",
-    "fifa",
-    "selección mexicana",
-    "seleccion mexicana",
-    "tri",
-    "estadio azteca",
-    "mundial 2026",
-    "fútbol",
-    "futbol"
+    "México"
 ]
 
 RSS_FEEDS = [
