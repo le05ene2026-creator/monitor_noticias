@@ -5,7 +5,16 @@ import smtplib
 from email.mime.text import MIMEText
 
 KEYWORDS = [
-    "México"
+    "mundial",
+    "copa del mundo",
+    "fifa",
+    "selección mexicana",
+    "seleccion mexicana",
+    "tri",
+    "estadio azteca",
+    "mundial 2026",
+    "fútbol",
+    "futbol"
 ]
 
 RSS_FEEDS = [
@@ -37,19 +46,8 @@ def obtener_noticias():
     resultados = []
 
     for feed_url in RSS_FEEDS:
-        print(f"Revisando RSS: {feed_url}")
-
         try:
             feed = feedparser.parse(feed_url)
-
-            print(f"Noticias recibidas: {len(feed.entries)}")
-
-            for i, entry in enumerate(feed.entries[:10], start=1):
-                titulo = entry.get("title", "SIN TITULO")
-                enlace = entry.get("link", "SIN LINK")
-
-                print(f"{i}. {titulo}")
-                print(f"   {enlace}")
 
             for entry in feed.entries:
                 titulo = entry.get("title", "")
@@ -65,9 +63,7 @@ def obtener_noticias():
                     })
 
         except Exception as e:
-            print(f"Error revisando {feed_url}: {e}")
-
-    print(f"Noticias que coinciden con palabras clave: {len(resultados)}")
+            print(e)
 
     return resultados
 
