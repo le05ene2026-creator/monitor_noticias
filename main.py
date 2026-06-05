@@ -59,7 +59,7 @@ def es_ultimas_24_horas(entry):
         return False
 
     ahora = datetime.now(timezone.utc)
-    limite = ahora - timedelta(hours=24)
+    limite = ahora - timedelta(hours=48)
 
     return dt >= limite
 
