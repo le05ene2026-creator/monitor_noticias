@@ -10,11 +10,11 @@ KEYWORDS = [
     "mundial",
     "copa del mundo",
     "fifa",
-    "selección mexicana",
+    "Selección Mexicana",
     "seleccion mexicana",
     "tri",
     "estadio azteca",
-    "mundial 2026",
+    "Mundial 2026",
     "fútbol",
     "futbol"
     "Japón"
