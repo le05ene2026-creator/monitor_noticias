@@ -20,7 +20,7 @@ KEYWORDS = [
 ]
 
 RSS_FEEDS = [
-    "https://rss.nytimes.com/services/xml/rss/nyt/Soccer.xml"
+    "https://www.eluniversal.com.mx/rss.xml"
 ]
 
 ARCHIVO_ENVIADAS = "noticias_enviadas.json"
