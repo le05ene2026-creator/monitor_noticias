@@ -131,14 +131,21 @@ def obtener_fecha_nota(url):
                 print(f"Fecha encontrada en {url}: {fecha_raw}")
         
                 try:
-                    dt = parsedate_to_datetime(fecha_raw)
-                    print(f"Fecha interpretada: {dt}")
+                    dt = datetime.fromisoformat(
+                        fecha_raw.replace("Z", "+00:00")
+                    )
+                    print(f"Fecha interpretada ISO: {dt}")
                     return dt
+                
                 except:
                     try:
-                        dt = datetime.fromisoformat(fecha_raw.replace("Z", "+00:00"))
-                        print(f"Fecha interpretada ISO: {dt}")
+                        dt = parsedate_to_datetime(fecha_raw)
+                        print(f"Fecha interpretada RFC: {dt}")
                         return dt
+                
+                    except Exception as e:
+                        print(f"No pude interpretar fecha: {fecha_raw} - {e}")
+                        return None
                     except Exception as e:
                         print(f"No pude interpretar fecha: {fecha_raw} - {e}")
                         return None
