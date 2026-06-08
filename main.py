@@ -163,9 +163,6 @@ def obtener_noticias():
         print(f"Revisando RSS: {medio} - {feed_url}")
 
         parsed = feedparser.parse(feed_url)
-        dt = parsedate_to_datetime(meta["content"])
-        print(f"Fecha interpretada: {dt}")
-        return dt
         print(f"Fecha encontrada: {meta['content']}")
         print(f"Noticias recibidas: {len(parsed.entries)}")
 
