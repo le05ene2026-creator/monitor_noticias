@@ -6,6 +6,10 @@ from email.mime.text import MIMEText
 from datetime import datetime, timedelta, timezone
 from email.utils import parsedate_to_datetime
 
+import requests
+from bs4 import BeautifulSoup
+from urllib.parse import urljoin
+
 KEYWORDS = [
     "mundial",
     "copa del mundo",
@@ -99,13 +103,17 @@ def es_ultimas_24_horas(entry):
 def obtener_noticias():
     resultados = []
 
-    for feed_url in RSS_FEEDS:
-        print(f"Revisando RSS: {feed_url}")
+    # 1. Revisar RSS
+    for feed in RSS_FEEDS:
+        medio = feed["medio"]
+        feed_url = feed["url"]
 
-        feed = feedparser.parse(feed_url)
-        print(f"Noticias recibidas: {len(feed.entries)}")
+        print(f"Revisando RSS: {medio} - {feed_url}")
 
-        for entry in feed.entries:
+        parsed = feedparser.parse(feed_url)
+        print(f"Noticias recibidas: {len(parsed.entries)}")
+
+        for entry in parsed.entries:
             titulo = entry.get("title", "")
             resumen = entry.get("summary", "")
             enlace = entry.get("link", "")
@@ -115,12 +123,65 @@ def obtener_noticias():
 
             if es_ultimas_24_horas(entry) and contiene_keyword(texto):
                 resultados.append({
+                    "medio": medio,
                     "titulo": titulo,
                     "link": enlace,
                     "fecha": fecha
                 })
 
-    print(f"Noticias encontradas en últimas 24 horas: {len(resultados)}")
+    # 2. Revisar páginas web
+    headers = {
+        "User-Agent": "Mozilla/5.0 monitor-mundial-2026",
+        "Accept-Language": "es-MX,es;q=0.9"
+    }
+
+    for pagina in PAGINAS:
+        medio = pagina["medio"]
+        url = pagina["url"]
+
+        print(f"Revisando página: {medio} - {url}")
+
+        try:
+            r = requests.get(url, headers=headers, timeout=25)
+            print(f"Status: {r.status_code}")
+            print(f"Tamaño HTML: {len(r.text)}")
+
+            if r.status_code != 200:
+                continue
+
+            soup = BeautifulSoup(r.text, "html.parser")
+            enlaces = soup.find_all("a", href=True)
+
+            vistos = set()
+
+            for a in enlaces:
+                titulo = a.get_text(" ", strip=True)
+                href = a.get("href", "")
+
+                if not titulo or len(titulo) < 20:
+                    continue
+
+                enlace = urljoin(url, href)
+
+                if enlace in vistos:
+                    continue
+
+                vistos.add(enlace)
+
+                texto = titulo.lower()
+
+                if contiene_keyword(texto):
+                    resultados.append({
+                        "medio": medio,
+                        "titulo": titulo,
+                        "link": enlace,
+                        "fecha": "Fecha no detectada en portada"
+                    })
+
+        except Exception as e:
+            print(f"Error leyendo {medio}: {e}")
+
+    print(f"Noticias encontradas: {len(resultados)}")
 
     return resultados
 
@@ -133,6 +194,7 @@ def enviar_correo(noticias):
     cuerpo = "Noticias encontradas en las últimas 24 horas:\n\n"
 
     for n in noticias:
+        cuerpo += f"Medio: {n.get('medio', 'Sin medio')}\n"
         cuerpo += f"Título: {n['titulo']}\n"
         cuerpo += f"Fecha: {n['fecha']}\n"
         cuerpo += f"Enlace: {n['link']}\n\n"
