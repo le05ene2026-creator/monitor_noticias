@@ -118,9 +118,12 @@ def obtener_fecha_nota(url):
         posibles_metas = [
             {"property": "article:published_time"},
             {"property": "og:published_time"},
+            {"property": "article:modified_time"},
             {"name": "article:published_time"},
             {"name": "pubdate"},
             {"name": "date"},
+            {"name": "dc.date"},
+            {"name": "DC.date.issued"},
             {"itemprop": "datePublished"},
         ]
 
@@ -129,31 +132,60 @@ def obtener_fecha_nota(url):
             if meta and meta.get("content"):
                 fecha_raw = meta["content"]
                 print(f"Fecha encontrada en {url}: {fecha_raw}")
-        
+
+                # Primero ISO: 2026-06-08T15:42:32.988Z
                 try:
                     dt = datetime.fromisoformat(
                         fecha_raw.replace("Z", "+00:00")
                     )
                     print(f"Fecha interpretada ISO: {dt}")
                     return dt
-                
-                except:
-                    try:
-                        dt = parsedate_to_datetime(fecha_raw)
-                        print(f"Fecha interpretada RFC: {dt}")
-                        return dt
-                
-                    except Exception as e:
-                        print(f"No pude interpretar fecha: {fecha_raw} - {e}")
-                        return None
-                    except Exception as e:
-                        print(f"No pude interpretar fecha: {fecha_raw} - {e}")
-                        return None
+                except Exception:
+                    pass
+
+                # Luego formato RSS/RFC
+                try:
+                    dt = parsedate_to_datetime(fecha_raw)
+                    print(f"Fecha interpretada RFC: {dt}")
+                    return dt
+                except Exception as e:
+                    print(f"No pude interpretar fecha: {fecha_raw} - {e}")
 
         time_tag = soup.find("time")
         if time_tag and time_tag.get("datetime"):
-            return parsedate_to_datetime(time_tag["datetime"])
+            fecha_raw = time_tag["datetime"]
+            print(f"Fecha encontrada time en {url}: {fecha_raw}")
 
+            try:
+                dt = datetime.fromisoformat(
+                    fecha_raw.replace("Z", "+00:00")
+                )
+                print(f"Fecha interpretada time ISO: {dt}")
+                return dt
+            except Exception:
+                try:
+                    dt = parsedate_to_datetime(fecha_raw)
+                    print(f"Fecha interpretada time RFC: {dt}")
+                    return dt
+                except Exception as e:
+                    print(f"No pude interpretar time: {fecha_raw} - {e}")
+
+        # Fallback para El Universal:
+        # si el URL trae /YYYY/MM/DD/ se usa esa fecha a medianoche.
+        partes = url.split("/")
+        for i in range(len(partes) - 2):
+            if (
+                partes[i].isdigit()
+                and len(partes[i]) == 4
+                and partes[i + 1].isdigit()
+                and partes[i + 2].isdigit()
+            ):
+                fecha_url = f"{partes[i]}-{partes[i + 1]}-{partes[i + 2]}T00:00:00-06:00"
+                dt = datetime.fromisoformat(fecha_url)
+                print(f"Fecha inferida por URL en {url}: {dt}")
+                return dt
+
+        print(f"No se encontró fecha en: {url}")
         return None
 
     except Exception as e:
