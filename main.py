@@ -16,16 +16,16 @@ KEYWORDS = [
     "estadio azteca",
     "Mundial 2026",
     "fútbol",
-    "futbol"
-    "japón"
-    "arbitro"
-    "corner"
-    "penalti"
-    "fuera de juego"
-    "alineación"
-    "alineacion"
-    "tarjeta amarilla"
-    "tarjeta roja"
+    "futbol",
+    "japón",
+    "arbitro",
+    "corner",
+    "penalti",
+    "fuera de juego",
+    "alineación",
+    "alineacion",
+    "tarjeta amarilla",
+    "tarjeta roja",
     "driblear"
 ]
 
