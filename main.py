@@ -100,6 +100,58 @@ def es_ultimas_24_horas(entry):
     return dt >= limite
 
 
+def obtener_fecha_nota(url):
+    headers = {
+        "User-Agent": "Mozilla/5.0 monitor-mundial-2026",
+        "Accept-Language": "es-MX,es;q=0.9"
+    }
+
+    try:
+        r = requests.get(url, headers=headers, timeout=20)
+
+        if r.status_code != 200:
+            print(f"No se pudo abrir nota: {url} - Status {r.status_code}")
+            return None
+
+        soup = BeautifulSoup(r.text, "html.parser")
+
+        posibles_metas = [
+            {"property": "article:published_time"},
+            {"property": "og:published_time"},
+            {"name": "article:published_time"},
+            {"name": "pubdate"},
+            {"name": "date"},
+            {"itemprop": "datePublished"},
+        ]
+
+        for attrs in posibles_metas:
+            meta = soup.find("meta", attrs=attrs)
+            if meta and meta.get("content"):
+                return parsedate_to_datetime(meta["content"])
+
+        time_tag = soup.find("time")
+        if time_tag and time_tag.get("datetime"):
+            return parsedate_to_datetime(time_tag["datetime"])
+
+        return None
+
+    except Exception as e:
+        print(f"Error obteniendo fecha de nota {url}: {e}")
+        return None
+
+
+def fecha_en_ultimas_24_horas(dt):
+    if dt is None:
+        return False
+
+    if dt.tzinfo is None:
+        dt = dt.replace(tzinfo=timezone.utc)
+
+    ahora = datetime.now(timezone.utc)
+    limite = ahora - timedelta(hours=24)
+
+    return dt >= limite
+
 def obtener_noticias():
     resultados = []
 
@@ -171,12 +223,17 @@ def obtener_noticias():
                 texto = titulo.lower()
 
                 if contiene_keyword(texto):
-                    resultados.append({
-                        "medio": medio,
-                        "titulo": titulo,
-                        "link": enlace,
-                        "fecha": "Fecha no detectada en portada"
-                    })
+                    fecha_dt = obtener_fecha_nota(enlace)
+
+                    if fecha_en_ultimas_24_horas(fecha_dt):
+                        resultados.append({
+                            "medio": medio,
+                            "titulo": titulo,
+                            "link": enlace,
+                            "fecha": fecha_dt.isoformat()
+                        })
+                    else:
+                        print(f"Descartada por fecha: {titulo}")
 
         except Exception as e:
             print(f"Error leyendo {medio}: {e}")
