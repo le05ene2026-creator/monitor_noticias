@@ -10,18 +10,31 @@ KEYWORDS = [
     "mundial",
     "copa del mundo",
     "fifa",
-    "Selección Mexicana",
+    "selección mexicana",
     "seleccion mexicana",
     "tri",
     "estadio azteca",
     "Mundial 2026",
     "fútbol",
     "futbol"
-    "Japón"
+    "japón"
+    "arbitro"
+    "corner"
+    "penalti"
+    "fuera de juego"
+    "alineación"
+    "alineacion"
+    "tarjeta amarilla"
+    "tarjeta roja"
+    "driblear"
 ]
 
 RSS_FEEDS = [
-    "https://www.eluniversal.com.mx/rss.xml"
+    "https://www.jornada.com.mx/rss/deportes.xml"
+]
+
+PAGINAS = [
+    "https://www.eluniversal.com.mx/deportes/"
 ]
 
 ARCHIVO_ENVIADAS = "noticias_enviadas.json"
@@ -60,7 +73,7 @@ def es_ultimas_24_horas(entry):
         return False
 
     ahora = datetime.now(timezone.utc)
-    limite = ahora - timedelta(hours=48)
+    limite = ahora - timedelta(hours=24)
 
     return dt >= limite
 
