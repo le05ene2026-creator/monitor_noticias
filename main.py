@@ -30,11 +30,29 @@ KEYWORDS = [
 ]
 
 RSS_FEEDS = [
-    "https://www.jornada.com.mx/rss/deportes.xml"
+    {
+        "medio": "La Jornada",
+        "url": "https://www.jornada.com.mx/rss/deportes.xml"
+    },
+    {
+        "medio": "Reforma / Cancha",
+        "url": "https://www.reforma.com/rss/cancha.xml"
+    }
 ]
 
 PAGINAS = [
-    "https://www.eluniversal.com.mx/deportes/"
+    {
+        "medio": "El Universal",
+        "url": "https://www.eluniversal.com.mx/deportes/"
+    },
+    {
+        "medio": "Excélsior",
+        "url": "https://www.excelsior.com.mx/adrenalina"
+    },
+    {
+        "medio": "La Crónica de Hoy",
+        "url": "https://www.cronica.com.mx/deportes/"
+    }
 ]
 
 ARCHIVO_ENVIADAS = "noticias_enviadas.json"
