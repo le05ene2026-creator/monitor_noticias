@@ -127,7 +127,21 @@ def obtener_fecha_nota(url):
         for attrs in posibles_metas:
             meta = soup.find("meta", attrs=attrs)
             if meta and meta.get("content"):
-                return parsedate_to_datetime(meta["content"])
+                fecha_raw = meta["content"]
+                print(f"Fecha encontrada en {url}: {fecha_raw}")
+        
+                try:
+                    dt = parsedate_to_datetime(fecha_raw)
+                    print(f"Fecha interpretada: {dt}")
+                    return dt
+                except:
+                    try:
+                        dt = datetime.fromisoformat(fecha_raw.replace("Z", "+00:00"))
+                        print(f"Fecha interpretada ISO: {dt}")
+                        return dt
+                    except Exception as e:
+                        print(f"No pude interpretar fecha: {fecha_raw} - {e}")
+                        return None
 
         time_tag = soup.find("time")
         if time_tag and time_tag.get("datetime"):
@@ -163,7 +177,6 @@ def obtener_noticias():
         print(f"Revisando RSS: {medio} - {feed_url}")
 
         parsed = feedparser.parse(feed_url)
-        print(f"Fecha encontrada: {meta['content']}")
         print(f"Noticias recibidas: {len(parsed.entries)}")
 
         for entry in parsed.entries:
